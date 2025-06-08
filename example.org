@@ -1,0 +1,8 @@
+SERVER='https://acme-v02.api.letsencrypt.org/directory'
+DOMAIN=('example.org' 'mail.example.org')
+EMAIL='mail@example.org'
+TYPE='http'
+DNS='cloudflare'
+RESOLVER=('8.8.8.8:53' '77.88.8.8:53' '1.1.1.1:53')
+
+export CF_DNS_API_TOKEN='TOKEN'

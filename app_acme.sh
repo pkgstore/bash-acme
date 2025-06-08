@@ -1,6 +1,6 @@
 #!/usr/bin/env -S bash -euo pipefail
 # -------------------------------------------------------------------------------------------------------------------- #
-# ACME: HOOK
+# ACME: CERTIFICATE
 # -------------------------------------------------------------------------------------------------------------------- #
 # @package    Bash
 # @author     Kai Kimera <mail@kai.kim>
@@ -20,35 +20,52 @@ SRC_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd -P )"
 SRC_NAME="$( basename "$( readlink -f "${BASH_SOURCE[0]}" )" )"
 # shellcheck source=/dev/null
 . "${SRC_DIR}/${SRC_NAME%.*}.conf"
+# shellcheck source=/dev/null
+. "${SRC_DIR}/${1:?}"
 
 # Parameters.
-DATA=("${DATA:?}"); readonly DATA
-SERVICES=("${SERVICES[@]:?}"); readonly SERVICES
-CRT="${LEGO_CERT_PATH:?}"; readonly CRT
-KEY="${LEGO_CERT_KEY_PATH:?}"; readonly KEY
-PEM="${LEGO_CERT_PEM_PATH:?}"; readonly PEM
-PFX="${LEGO_CERT_PFX_PATH:?}"; readonly PFX
+KEY="${2:?}"; readonly KEY
+ACTION="${3:?}"; readonly ACTION
+SERVER="${SERVER:?}"; readonly SERVER
+DOMAIN=("${DOMAIN[@]:?}"); readonly DOMAIN
+EMAIL="${EMAIL:?}"; readonly EMAIL
+TYPE="${TYPE:?}"; readonly TYPE
 
 # -------------------------------------------------------------------------------------------------------------------- #
 # -----------------------------------------------------< SCRIPT >----------------------------------------------------- #
 # -------------------------------------------------------------------------------------------------------------------- #
 
-function _if_svc() {
-  local service; service="${1}"
-  systemctl list-units --type='service' --state='running' | grep -Fq "${service}" && return 0 || return 1
+function _err() {
+  echo >&2 "[$( date +'%Y-%m-%dT%H:%M:%S%z' )]: $*"; exit 1
 }
 
-function crt_install() {
-  [[ ! -d "${DATA}" ]] && mkdir -p "${DATA}"
-  for i in "${CRT}" "${KEY}" "${PEM}" "${PFX}"; do
-    install -u 'root' -g 'root' -m '0644' "${i}" "${DATA}"
-  done
-}
+function acme() {
+  local opts; opts=(
+    '--server' "${SERVER}"
+    '--path' "${SRC_DIR}"
+    '--email' "${EMAIL}"
+    '--key-type' "${KEY}"
+    '--pem'
+    '--pfx'
+  )
 
-function svc_reload() {
-  for s in "${SERVICES[@]}"; do _if_svc "${s}" && systemctl reload "${s}"; done
+  for i in "${DOMAIN[@]}"; do opts+=('--domains' "${i}"); done
+
+  case "${TYPE}" in
+    'http') opts+=('--http' '--http.port' "${PORT:-:8080}") ;;
+    'dns') opts+=('--dns' "${DNS}"); for i in "${RESOLVER[@]}"; do opts+=('--dns.resolvers' "${i}"); done ;;
+    *) _err 'TYPE does not exist!' ;;
+  esac
+
+  case "${ACTION}" in
+    'run') opts+=('--accept-tos' 'run') ;;
+    'renew') opts+=('--days' "${DAYS:-30}" 'renew' '--renew-hook' "${SRC_DIR}/app_hook.sh") ;;
+    *) _err 'ACTION does not exist!' ;;
+  esac
+
+  "${SRC_DIR}/lego" "${opts[@]}"
 }
 
 function main() {
-  crt_install && svc_reload
+  acme
 }; main "$@"
