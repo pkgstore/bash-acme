@@ -28,8 +28,10 @@ KEY="${2:?}"; readonly KEY
 ACTION="${3:?}"; readonly ACTION
 SERVER="${SERVER:?}"; readonly SERVER
 DOMAINS=("${DOMAINS[@]:?}"); readonly DOMAINS
+RESOLVERS=("${RESOLVERS[@]:?}"); readonly RESOLVERS
 EMAIL="${EMAIL:?}"; readonly EMAIL
 TYPE="${TYPE:?}"; readonly TYPE
+DNS="${DNS:?}"; readonly DNS
 
 # -------------------------------------------------------------------------------------------------------------------- #
 # -----------------------------------------------------< SCRIPT >----------------------------------------------------- #

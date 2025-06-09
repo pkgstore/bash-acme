@@ -1,5 +1,4 @@
 DOMAINS=('example.org' 'mail.example.org')
 EMAIL='mail@example.org'
 TYPE='dns'
-DNS='cloudflare'
 export CF_DNS_API_TOKEN='TOKEN'
