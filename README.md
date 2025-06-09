@@ -1,5 +1,7 @@
 # ACME
 
+A script that generates ACME certificates for multiple domains. Allows overriding variables at different levels.
+
 ## Install
 
 ```bash
