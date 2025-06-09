@@ -36,7 +36,7 @@ PFX="${LEGO_CERT_PFX_PATH:?}"; readonly PFX
 function _if_svc() {
   local service; service="${1}"
 
-  systemctl list-units --type='service' --state='running' | grep -Fq "${service}" && return 0 || return 1
+  systemctl list-units --type='service' --state='active' | grep -Fq "${service}" && return 0 || return 1
 }
 
 function crt_install() {
