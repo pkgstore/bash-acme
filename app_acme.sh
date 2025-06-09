@@ -42,7 +42,7 @@ function _err() {
 function acme() {
   local opts; opts=(
     '--server' "${SERVER}"
-    '--path' "${SRC_DIR}"
+    '--path' "${SRC_DIR}.${KEY}"
     '--email' "${EMAIL}"
     '--key-type' "${KEY}"
     '--pem'
