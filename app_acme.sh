@@ -27,7 +27,7 @@ SRC_NAME="$( basename "$( readlink -f "${BASH_SOURCE[0]}" )" )"
 KEY="${2:?}"; readonly KEY
 ACTION="${3:?}"; readonly ACTION
 SERVER="${SERVER:?}"; readonly SERVER
-DOMAIN=("${DOMAIN[@]:?}"); readonly DOMAIN
+DOMAINS=("${DOMAINS[@]:?}"); readonly DOMAINS
 EMAIL="${EMAIL:?}"; readonly EMAIL
 TYPE="${TYPE:?}"; readonly TYPE
 
@@ -47,13 +47,15 @@ function acme() {
     '--key-type' "${KEY}"
     '--pem'
     '--pfx'
+    '--pfx.pass' "${PFX_PASS:-changeit}"
+    '--pfx.format' "${PFX_FORMAT:-RC2}"
   )
 
-  for i in "${DOMAIN[@]}"; do opts+=('--domains' "${i}"); done
+  for i in "${DOMAINS[@]}"; do opts+=('--domains' "${i}"); done
 
   case "${TYPE}" in
     'http') opts+=('--http' '--http.port' "${PORT:-:8080}") ;;
-    'dns') opts+=('--dns' "${DNS}"); for i in "${RESOLVER[@]}"; do opts+=('--dns.resolvers' "${i}"); done ;;
+    'dns') opts+=('--dns' "${DNS}"); for i in "${RESOLVERS[@]}"; do opts+=('--dns.resolvers' "${i}"); done ;;
     *) _err 'TYPE does not exist!' ;;
   esac
 
