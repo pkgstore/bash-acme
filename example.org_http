@@ -1,0 +1,4 @@
+SERVER='https://acme-v02.api.letsencrypt.org/directory'
+DOMAIN=('example.org' 'mail.example.org')
+EMAIL='mail@example.org'
+TYPE='http'

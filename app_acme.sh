@@ -42,7 +42,7 @@ function _err() {
 function acme() {
   local opts; opts=(
     '--server' "${SERVER}"
-    '--path' "${SRC_DIR}.${KEY}"
+    '--path' "${SRC_DIR}/${KEY}"
     '--email' "${EMAIL}"
     '--key-type' "${KEY}"
     '--pem'
@@ -58,8 +58,8 @@ function acme() {
   esac
 
   case "${ACTION}" in
-    'run') opts+=('--accept-tos' 'run') ;;
-    'renew') opts+=('--days' "${DAYS:-30}" 'renew' '--renew-hook' "${SRC_DIR}/app_hook.sh") ;;
+    'run') opts+=('--accept-tos' 'run' '--run-hook' "${SRC_DIR}/app_hook.sh") ;;
+    'renew') opts+=('renew' '--days' "${DAYS:-30}" '--renew-hook' "${SRC_DIR}/app_hook.sh") ;;
     *) _err 'ACTION does not exist!' ;;
   esac
 
