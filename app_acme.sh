@@ -48,36 +48,65 @@ function acme() {
     '--path' "${SRC_DIR}/${KEY}"
     '--email' "${EMAIL}"
     '--key-type' "${KEY}"
-    '--pem'
-    '--pfx'
+    '--pem' '--pfx'
     '--pfx.pass' "${PFX_PASS:-changeit}"
     '--pfx.format' "${PFX_FORMAT:-RC2}"
     '--http-timeout' "${HTTP_TIMEOUT:-0}"
     '--dns-timeout' "${DNS_TIMEOUT:-10}"
     '--cert.timeout' "${CERT_TIMEOUT:-30}"
     '--overall-request-limit' "${REQUEST_LIMIT:-18}"
-    '--user-agent' "${USER_AGENT:-ACME-LEGO/"${CFG}"}"
+    '--user-agent' "${USER_AGENT:-ACME-LEGO/$CFG}"
   )
-
+  (( "${TLS_SKIP_VERIFY:-0}" )) && opts+=('--tls-skip-verify')
   for i in "${DOMAINS[@]}"; do opts+=('--domains' "${i}"); done
 
   case "${TYPE}" in
     'http')
-      opts+=('--http' '--http.port' "${PORT:-:8080}")
-      [[ "${PROXY_HEADER:-}" ]] && opts+=('--http.proxy-header' "${PROXY_HEADER}")
+      opts+=(
+        '--http'
+        '--http.port' "${PORT:-:8080}"
+      )
+      [[ "${HTTP_DELAY:-}" ]] && opts+=('--http.delay' "${HTTP_DELAY}")
+      [[ "${HTTP_PROXY_HEADER:-}" ]] && opts+=('--http.proxy-header' "${HTTP_PROXY_HEADER}")
+      [[ "${HTTP_MEMCACHED_HOST:-}" ]] && opts+=('--http.memcached-host' "${HTTP_MEMCACHED_HOST}")
+      [[ "${HTTP_S3_BUCKET:-}" ]] && opts+=('--http.s3-bucket' "${HTTP_S3_BUCKET}")
       ;;
     'dns')
       opts+=('--dns' "${DNS}")
+      (( "${DNS_ANS:-1}" )) || opts+=('--dns.propagation-disable-ans')
+      (( "${DNS_RNS:-0}" )) && opts+=('--dns.propagation-rns')
       for i in "${RESOLVERS[@]}"; do opts+=('--dns.resolvers' "${i}"); done
       ;;
-    *) _err 'TYPE does not exist!'
+    *)
+      _err 'TYPE does not exist!'
       ;;
   esac
 
   case "${ACTION}" in
-    'run') opts+=('--accept-tos' 'run' '--run-hook' "${SRC_DIR}/app_hook.sh") ;;
-    'renew') opts+=('renew' '--days' "${DAYS:-30}" '--renew-hook' "${SRC_DIR}/app_hook.sh") ;;
-    *) _err 'ACTION does not exist!' ;;
+    'run')
+      opts+=(
+        '--accept-tos' 'run'
+        '--run-hook' "${SRC_DIR}/app_hook.sh"
+        '--run-hook-timeout' "${RUN_HOOK_TIMEOUT:-2m0s}"
+      )
+      (( "${NO_BUNDLE:-0}" )) && opts+=('--no-bundle')
+      (( "${MUST_STAPLE:-0}" )) && opts+=('--must-staple')
+      ;;
+    'renew')
+      opts+=(
+        'renew'
+        '--days' "${DAYS:-30}"
+        '--renew-hook' "${SRC_DIR}/app_hook.sh"
+        '--renew-hook-timeout' "${RENEW_HOOK_TIMEOUT:-2m0s}"
+      )
+      (( "${ARI_DISABLE:-0}" )) && opts+=('--ari-disable')
+      (( "${REUSE_KEY:-0}" )) && opts+=('--reuse-key')
+      (( "${NO_BUNDLE:-0}" )) && opts+=('--no-bundle')
+      (( "${MUST_STAPLE:-0}" )) && opts+=('--must-staple')
+      ;;
+    *)
+      _err 'ACTION does not exist!'
+      ;;
   esac
 
   "${SRC_DIR}/lego" "${opts[@]}"
