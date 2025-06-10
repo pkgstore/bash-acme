@@ -67,7 +67,7 @@ function acme() {
         '--http'
         '--http.port' "${PORT:-:8080}"
       )
-      [[ -n "${PROXY_HEADER}" ]] && opts+=('--http.proxy-header' "${PROXY_HEADER}")
+      [[ "${PROXY_HEADER:-}" ]] && opts+=('--http.proxy-header' "${PROXY_HEADER}")
       ;;
     'dns')
       opts+=('--dns' "${DNS}")
