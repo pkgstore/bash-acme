@@ -24,6 +24,7 @@ SRC_NAME="$( basename "$( readlink -f "${BASH_SOURCE[0]}" )" )"
 . "${SRC_DIR}/${1:?}"
 
 # Parameters.
+CFG="${1:?}"; readonly CFG
 KEY="${2:?}"; readonly KEY
 ACTION="${3:?}"; readonly ACTION
 SERVER="${SERVER:?}"; readonly SERVER
@@ -51,14 +52,29 @@ function acme() {
     '--pfx'
     '--pfx.pass' "${PFX_PASS:-changeit}"
     '--pfx.format' "${PFX_FORMAT:-RC2}"
+    '--http-timeout' "${HTTP_TIMEOUT:-0}"
+    '--dns-timeout' "${DNS_TIMEOUT:-10}"
+    '--cert.timeout' "${CERT_TIMEOUT:-30}"
+    '--overall-request-limit' "${REQUEST_LIMIT:-18}"
+    '--user-agent' "${USER_AGENT:-ACME-LEGO/"${CFG}"}"
   )
 
   for i in "${DOMAINS[@]}"; do opts+=('--domains' "${i}"); done
 
   case "${TYPE}" in
-    'http') opts+=('--http' '--http.port' "${PORT:-:8080}") ;;
-    'dns') opts+=('--dns' "${DNS}"); for i in "${RESOLVERS[@]}"; do opts+=('--dns.resolvers' "${i}"); done ;;
-    *) _err 'TYPE does not exist!' ;;
+    'http')
+      opts+=(
+        '--http'
+        '--http.port' "${PORT:-:8080}"
+      )
+      [[ -n "${PROXY_HEADER}" ]] && opts+=('--http.proxy-header' "${PROXY_HEADER}")
+      ;;
+    'dns')
+      opts+=('--dns' "${DNS}")
+      for i in "${RESOLVERS[@]}"; do opts+=('--dns.resolvers' "${i}"); done
+      ;;
+    *) _err 'TYPE does not exist!'
+      ;;
   esac
 
   case "${ACTION}" in
