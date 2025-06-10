@@ -63,10 +63,7 @@ function acme() {
 
   case "${TYPE}" in
     'http')
-      opts+=(
-        '--http'
-        '--http.port' "${PORT:-:8080}"
-      )
+      opts+=('--http' '--http.port' "${PORT:-:8080}")
       [[ "${PROXY_HEADER:-}" ]] && opts+=('--http.proxy-header' "${PROXY_HEADER}")
       ;;
     'dns')
