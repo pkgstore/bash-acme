@@ -2,5 +2,5 @@ SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 HOME=/root
 
-# 35 3 * * * root "${HOME}/apps/acme/app_acme.sh" 'example.org' 'rsa4096' 'renew' > /dev/null 2>&1
-# 35 4 * * * root "${HOME}/apps/acme/app_acme.sh" 'example.org' 'ec256' 'renew' > /dev/null 2>&1
+# 35 3 * * * root "${HOME}/apps/acme/app.acme.sh" 'example.org' 'rsa4096' 'renew' > /dev/null 2>&1
+# 35 4 * * * root "${HOME}/apps/acme/app.acme.sh" 'example.org' 'ec256' 'renew' > /dev/null 2>&1
