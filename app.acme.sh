@@ -38,7 +38,7 @@ DNS="${DNS:?}"; readonly DNS
 # -----------------------------------------------------< SCRIPT >----------------------------------------------------- #
 # -------------------------------------------------------------------------------------------------------------------- #
 
-function _err() {
+function _error() {
   echo >&2 "[$( date '+%FT%H:%M:%S%z' )]: $*"; exit 1
 }
 
@@ -78,7 +78,7 @@ function acme() {
       for i in "${RESOLVERS[@]}"; do opts+=('--dns.resolvers' "${i}"); done
       ;;
     *)
-      _err 'TYPE does not exist!'
+      _error 'TYPE does not exist!'
       ;;
   esac
 
@@ -105,7 +105,7 @@ function acme() {
       (( "${MUST_STAPLE:-0}" )) && opts+=('--must-staple')
       ;;
     *)
-      _err 'ACTION does not exist!'
+      _error 'ACTION does not exist!'
       ;;
   esac
 
