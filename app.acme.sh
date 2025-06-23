@@ -38,8 +38,29 @@ DNS="${DNS:?}"; readonly DNS
 # -----------------------------------------------------< SCRIPT >----------------------------------------------------- #
 # -------------------------------------------------------------------------------------------------------------------- #
 
-function _error() {
-  echo >&2 "[$( date '+%FT%T%z' )]: $*"; exit 1
+function _date() {
+  local type; type="${1}"
+
+  case "${type}" in
+    'd') date -u '+%d' ;;
+    'm') date -u '+%m' ;;
+    's') date -u '+%s' ;;
+    't') date -u '+%F.%H-%M-%S' ;;
+    'Y') date -u '+%Y' ;;
+    'z') date '+%FT%T%:z' ;;
+    *) return 1 ;;
+  esac
+}
+
+function _msg() {
+  local type; type="${1}"
+  local msg; msg="$( _date 'z' ) $( _host 'f' ) ${SRC_NAME}: ${2:?}"
+
+  case "${type}" in
+    'error') echo "${msg}" >&2; exit 1 ;;
+    'success') echo "${msg}" ;;
+    *) return 1 ;;
+  esac
 }
 
 function acme() {
@@ -78,7 +99,7 @@ function acme() {
       for i in "${RESOLVERS[@]}"; do opts+=('--dns.resolvers' "${i}"); done
       ;;
     *)
-      _error 'TYPE does not exist!'
+      _msg 'error' "'TYPE' does not exist!"
       ;;
   esac
 
@@ -105,11 +126,23 @@ function acme() {
       (( "${MUST_STAPLE:-0}" )) && opts+=('--must-staple')
       ;;
     *)
-      _error 'ACTION does not exist!'
+      _msg 'error' "'ACTION' does not exist!"
       ;;
   esac
 
-  "${SRC_DIR}/lego" "${opts[@]}"
+  if "${SRC_DIR}/lego" "${opts[@]}"; then
+    msg=(
+      'success'
+      "Certificate retrieval/renewal completed successfully"
+      "Certificate retrieval/renewal completed successfully."
+    ); _mail "${msg[@]}"; _gitlab "${msg[@]}"; _msg 'success' "${msg[2]}"
+  else
+    msg=(
+      'error'
+      "Error while retrieving/updating certificate"
+      "Error while retrieving/updating certificate!"
+    ); _mail "${msg[@]}"; _gitlab "${msg[@]}"; _msg 'error' "${msg[2]}"
+  fi
 }
 
 function main() {
