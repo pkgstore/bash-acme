@@ -38,29 +38,57 @@ DNS="${DNS:?}"; readonly DNS
 # -----------------------------------------------------< SCRIPT >----------------------------------------------------- #
 # -------------------------------------------------------------------------------------------------------------------- #
 
-function _date() {
-  local type; type="${1}"
-
-  case "${type}" in
-    'd') date -u '+%d' ;;
-    'm') date -u '+%m' ;;
-    's') date -u '+%s' ;;
-    't') date -u '+%F.%H-%M-%S' ;;
-    'Y') date -u '+%Y' ;;
-    'z') date '+%FT%T%:z' ;;
-    *) return 1 ;;
-  esac
-}
-
 function _msg() {
   local type; type="${1}"
-  local msg; msg="$( _date 'z' ) $( _host 'f' ) ${SRC_NAME}: ${2}"
+  local msg; msg="$( date '+%FT%T%:z' ) $( hostname -f ) ${SRC_NAME}: ${2}"
 
   case "${type}" in
     'error') echo "${msg}" >&2; exit 1 ;;
     'success') echo "${msg}" ;;
     *) return 1 ;;
   esac
+}
+
+function _mail() {
+  (( ! "${MAIL_ON}" )) && return 0
+
+  local type; type="#type:backup:${1}"
+  local subj; subj="[$( hostname -f )] ${SRC_NAME}: ${2}"
+  local body; body="${3}"
+  local id; id="#id:$( hostname -f ):$( dmidecode -s 'system-uuid' )"
+  local ip; ip="#ip:$( hostname -I )"
+  local date; date="#date:$( date '+%FT%T%:z' )"
+  local opts; opts=('-S' 'v15-compat' '-s' "${subj}" '-r' "${MAIL_FROM}")
+  [[ "${MAIL_SMTP_SERVER:-}" ]] && opts+=(
+    '-S' "mta=${MAIL_SMTP_SERVER} smtp-use-starttls"
+    '-S' "smtp-auth=${MAIL_SMTP_AUTH:-none}"
+  )
+  opts+=('-.')
+
+  printf "%s\n\n-- \n%s\n%s\n%s\n%s" "${body}" "${id^^}" "${ip^^}" "${date^^}" "${type^^}" \
+    | s-nail "${opts[@]}" "${MAIL_TO[@]}"
+}
+
+function _gitlab() {
+  (( ! "${GITLAB_ON}" )) && return 0
+
+  local label; label="${1}"
+  local title; title="[$( hostname -f )] ${SRC_NAME}: ${2}"
+  local desc; desc="${3}"
+  local id; id="#id:$( hostname -f ):$( dmidecode -s 'system-uuid' )"
+  local ip; ip="#ip:$( hostname -I )"
+  local date; date="#date:$( date '+%FT%T%:z' )"
+  local type; type="#type:backup:${label}"
+
+  curl "${GITLAB_API}/projects/${GITLAB_PROJECT}/issues" -X 'POST' -kfsLo '/dev/null' \
+    -H "PRIVATE-TOKEN: ${GITLAB_TOKEN}" -H 'Content-Type: application/json' \
+    -d @- <<EOF
+{
+  "title": "${title}",
+  "description": "${desc//\'/\`}\n\n---\n\n- \`${id^^}\`\n- \`${ip^^}\`\n- \`${date^^}\`\n- \`${type^^}\`",
+  "labels": "backup,database,${label}"
+}
+EOF
 }
 
 function acme() {
