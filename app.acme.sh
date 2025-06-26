@@ -161,14 +161,14 @@ function acme() {
   if "${SRC_DIR}/lego" "${opts[@]}"; then
     msg=(
       'success'
-      "Certificate retrieval/renewal completed successfully"
-      "Certificate retrieval/renewal completed successfully."
+      "Certificate for domains (${DOMAINS[@]@Q}) successfully received/renewed"
+      "Certificate for domains (${DOMAINS[@]@Q}) successfully received/renewed."
     ); _mail "${msg[@]}"; _gitlab "${msg[@]}"; _msg 'success' "${msg[2]}"
   else
     msg=(
       'error'
-      "Error while retrieving/updating certificate"
-      "Error while retrieving/updating certificate!"
+      "Error while receiving/renewing certificate for domains (${DOMAINS[@]@Q})"
+      "Error while receiving/renewing certificate for domains (${DOMAINS[@]@Q})!"
     ); _mail "${msg[@]}"; _gitlab "${msg[@]}"; _msg 'error' "${msg[2]}"
   fi
 }
