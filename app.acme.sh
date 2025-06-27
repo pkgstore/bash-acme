@@ -42,7 +42,8 @@ GITLAB_PROJECT="${GITLAB_PROJECT:?}"; readonly GITLAB_PROJECT
 GITLAB_TOKEN="${GITLAB_TOKEN:?}"; readonly GITLAB_TOKEN
 
 # Variables.
-LOG="${SRC_DIR}/log.acme"
+LOG_ACME="${SRC_DIR}/log.acme"
+LOG_LEGO="${SRC_DIR}/log.lego"
 
 # -------------------------------------------------------------------------------------------------------------------- #
 # -----------------------------------------------------< SCRIPT >----------------------------------------------------- #
@@ -168,8 +169,8 @@ function acme() {
       ;;
   esac
 
-  if "${SRC_DIR}/lego" "${opts[@]}" 2>&1 | tee "${LOG}"; then
-    if ! grep -q 'no renewal' "${LOG}"; then
+  if "${SRC_DIR}/lego" "${opts[@]}" 2>&1 | tee "${LOG_LEGO}"; then
+    if ! grep -q 'no renewal' "${LOG_LEGO}"; then
       msg=(
         'success'
         "Certificate for domains successfully received/renewed"
@@ -186,5 +187,5 @@ function acme() {
 }
 
 function main() {
-  acme
+  acme 2>&1 | tee "${LOG_ACME}"
 }; main "$@"
