@@ -85,7 +85,7 @@ function _gitlab() {
   local id; id="#id:$( hostname -f ):$( dmidecode -s 'system-uuid' )"
   local ip; ip="#ip:$( hostname -I )"
   local date; date="#date:$( date '+%FT%T%:z' )"
-  local type; type="#type:backup:${label}"
+  local type; type="#type:domain:${label}"
 
   curl "${GITLAB_API}/projects/${GITLAB_PROJECT}/issues" -X 'POST' -kfsLo '/dev/null' \
     -H "PRIVATE-TOKEN: ${GITLAB_TOKEN}" -H 'Content-Type: application/json' \
