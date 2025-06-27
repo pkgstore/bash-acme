@@ -1,4 +1,4 @@
 DOMAINS=('example.org' 'mail.example.org')
-EMAIL='mail@example.org'
+MAIL='mail@example.org'
 TYPE='dns'
 export CF_DNS_API_TOKEN='TOKEN'

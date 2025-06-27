@@ -33,6 +33,13 @@ RESOLVERS=("${RESOLVERS[@]:?}"); readonly RESOLVERS
 EMAIL="${EMAIL:?}"; readonly EMAIL
 TYPE="${TYPE:?}"; readonly TYPE
 DNS="${DNS:?}"; readonly DNS
+MAIL_ON="${MAIL_ON:?}"; readonly MAIL_ON
+MAIL_FROM="${MAIL_FROM:?}"; readonly MAIL_FROM
+MAIL_TO=("${MAIL_TO[@]:?}"); readonly MAIL_TO
+GITLAB_ON="${GITLAB_ON:?}"; readonly GITLAB_ON
+GITLAB_API="${GITLAB_API:?}"; readonly GITLAB_API
+GITLAB_PROJECT="${GITLAB_PROJECT:?}"; readonly GITLAB_PROJECT
+GITLAB_TOKEN="${GITLAB_TOKEN:?}"; readonly GITLAB_TOKEN
 
 # -------------------------------------------------------------------------------------------------------------------- #
 # -----------------------------------------------------< SCRIPT >----------------------------------------------------- #
@@ -86,7 +93,7 @@ function _gitlab() {
 {
   "title": "${title}",
   "description": "${desc//\'/\`}\n\n---\n\n- \`${id^^}\`\n- \`${ip^^}\`\n- \`${date^^}\`\n- \`${type^^}\`",
-  "labels": "backup,database,${label}"
+  "labels": "domain,acme,${label}"
 }
 EOF
 }
@@ -135,7 +142,7 @@ function acme() {
     'run')
       opts+=(
         '--accept-tos' 'run'
-        '--run-hook' "${SRC_DIR}/app_hook.sh"
+        '--run-hook' "${SRC_DIR}/app.hook.sh"
         '--run-hook-timeout' "${RUN_HOOK_TIMEOUT:-2m0s}"
       )
       (( "${NO_BUNDLE:-0}" )) && opts+=('--no-bundle')
@@ -145,7 +152,7 @@ function acme() {
       opts+=(
         'renew'
         '--days' "${DAYS:-30}"
-        '--renew-hook' "${SRC_DIR}/app_hook.sh"
+        '--renew-hook' "${SRC_DIR}/app.hook.sh"
         '--renew-hook-timeout' "${RENEW_HOOK_TIMEOUT:-2m0s}"
       )
       (( "${ARI_DISABLE:-0}" )) && opts+=('--ari-disable')
