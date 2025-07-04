@@ -42,7 +42,7 @@ GITLAB_PROJECT="${GITLAB_PROJECT:?}"; readonly GITLAB_PROJECT
 GITLAB_TOKEN="${GITLAB_TOKEN:?}"; readonly GITLAB_TOKEN
 
 # Variables.
-LOG_TS="$( date '+%FT%T%:z' ) $( hostname -f ) ${SRC_NAME}"
+META="$( date '+%FT%T%:z' ) $( hostname -f ) ${SRC_NAME}"
 LOG_ACME="${SRC_DIR}/log.acme"
 LOG_LEGO="${SRC_DIR}/log.lego"
 
@@ -51,11 +51,11 @@ LOG_LEGO="${SRC_DIR}/log.lego"
 # -------------------------------------------------------------------------------------------------------------------- #
 
 function _error() {
-  echo "${LOG_TS}: $*" >&2; exit 1
+  echo "${META}: $*" >&2; exit 1
 }
 
 function _success() {
-  echo "${LOG_TS}: $*" >&2
+  echo "${META}: $*" >&2
 }
 
 function _mail() {
