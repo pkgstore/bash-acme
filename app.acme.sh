@@ -42,6 +42,7 @@ GITLAB_PROJECT="${GITLAB_PROJECT:?}"; readonly GITLAB_PROJECT
 GITLAB_TOKEN="${GITLAB_TOKEN:?}"; readonly GITLAB_TOKEN
 
 # Variables.
+LOG_TS="$( date '+%FT%T%:z' ) $( hostname -f ) ${SRC_NAME}"
 LOG_ACME="${SRC_DIR}/log.acme"
 LOG_LEGO="${SRC_DIR}/log.lego"
 
@@ -49,15 +50,12 @@ LOG_LEGO="${SRC_DIR}/log.lego"
 # -----------------------------------------------------< SCRIPT >----------------------------------------------------- #
 # -------------------------------------------------------------------------------------------------------------------- #
 
-function _msg() {
-  local type; type="${1}"
-  local msg; msg="$( date '+%FT%T%:z' ) $( hostname -f ) ${SRC_NAME}: ${2}"
+function _error() {
+  echo "${LOG_TS}: $*" >&2; exit 1
+}
 
-  case "${type}" in
-    'error') echo "${msg}" >&2; exit 1 ;;
-    'success') echo "${msg}" ;;
-    *) return 1 ;;
-  esac
+function _success() {
+  echo "${LOG_TS}: $*" >&2
 }
 
 function _mail() {
@@ -102,6 +100,17 @@ function _gitlab() {
 EOF
 }
 
+function _msg() {
+  _mail "${1}" "${2}" "${3}"
+  _gitlab "${1}" "${2}" "${3}"
+
+  case "${1}" in
+    'error') _error "${3}" ;;
+    'success') _success "${3}" ;;
+    *) _error "'MSG_TYPE' does not exist!" ;;
+  esac
+}
+
 function acme() {
   local opts; opts=(
     '--server' "${SERVER}"
@@ -138,7 +147,7 @@ function acme() {
       for i in "${RESOLVERS[@]}"; do opts+=('--dns.resolvers' "${i}"); done
       ;;
     *)
-      _msg 'error' "'TYPE' does not exist!"
+      _error "'TYPE' does not exist!"
       ;;
   esac
 
@@ -165,24 +174,25 @@ function acme() {
       (( "${MUST_STAPLE:-0}" )) && opts+=('--must-staple')
       ;;
     *)
-      _msg 'error' "'ACTION' does not exist!"
+      _error "'ACTION' does not exist!"
       ;;
   esac
 
+  local msg_e; msg_e=(
+    'error'
+    "Error while receiving/renewing certificate for domains"
+    "Error while receiving/renewing certificate for domains: ${DOMAINS[@]@Q}!"
+  )
+  local msg_s; msg_s=(
+    'success'
+    "Certificate for domains successfully received/renewed"
+    "Certificate for domains successfully received/renewed: ${DOMAINS[@]@Q}."
+  )
+
   if "${SRC_DIR}/lego" "${opts[@]}" 2>&1 | tee "${LOG_LEGO}"; then
-    if ! grep -q 'no renewal' "${LOG_LEGO}"; then
-      msg=(
-        'success'
-        "Certificate for domains successfully received/renewed"
-        "Certificate for domains successfully received/renewed: ${DOMAINS[@]@Q}."
-      ); _mail "${msg[@]}"; _gitlab "${msg[@]}"; _msg 'success' "${msg[2]}"
-    fi
+    grep -q 'no renewal' "${LOG_LEGO}" || _msg "${msg_s[@]}"
   else
-    msg=(
-      'error'
-      "Error while receiving/renewing certificate for domains"
-      "Error while receiving/renewing certificate for domains: ${DOMAINS[@]@Q}!"
-    ); _mail "${msg[@]}"; _gitlab "${msg[@]}"; _msg 'error' "${msg[2]}"
+    _msg "${msg_e[@]}"
   fi
 }
 
