@@ -1,0 +1,1 @@
+{"name":"","description":"","install":{"files":[{"name":"app.acme.conf","path":"/root/apps/acme"},{"name":"app.acme.sh","path":"/root/apps/acme"},{"name":"app.hook.conf","path":"/root/apps/acme"},{"name":"app.hook.sh","path":"/root/apps/acme"},{"name":"job.acme","path":"/root/apps/acme"}]}}
