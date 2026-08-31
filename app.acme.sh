@@ -120,6 +120,7 @@ function acme() {
     '--pem' '--pfx'
     '--pfx.password' "${PFX_PASS:-changeit}"
     '--pfx.format' "${PFX_FORMAT:-RC2}"
+    '--user-agent' "${USER_AGENT:-ACME-LEGO/$CFG}"
   )
 
   for i in "${DOMAINS[@]}"; do opts+=('--domains' "${i}"); done
