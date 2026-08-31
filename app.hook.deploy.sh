@@ -24,10 +24,10 @@ SRC_NAME="$( basename "$( readlink -f "${BASH_SOURCE[0]}" )" )"
 # Parameters.
 DATA=("${DATA:?}"); readonly DATA
 SERVICES=("${SERVICES[@]:?}"); readonly SERVICES
-CRT="${LEGO_CERT_PATH:?}"; readonly CRT
-KEY="${LEGO_CERT_KEY_PATH:?}"; readonly KEY
-PEM="${LEGO_CERT_PEM_PATH:?}"; readonly PEM
-PFX="${LEGO_CERT_PFX_PATH:?}"; readonly PFX
+CRT="${LEGO_HOOK_CERT_PATH:?}"; readonly CRT
+KEY="${LEGO_HOOK_CERT_KEY_PATH:?}"; readonly KEY
+PEM="${LEGO_HOOK_CERT_PEM_PATH:?}"; readonly PEM
+PFX="${LEGO_HOOK_CERT_PFX_PATH:?}"; readonly PFX
 
 # -------------------------------------------------------------------------------------------------------------------- #
 # -----------------------------------------------------< SCRIPT >----------------------------------------------------- #
@@ -35,16 +35,12 @@ PFX="${LEGO_CERT_PFX_PATH:?}"; readonly PFX
 
 function _if_svc() {
   local service; service="${1}"
-
   systemctl list-units --type='service' --state='active' | grep -Fq "${service}" && return 0 || return 1
 }
 
 function crt_install() {
   local cert=("${CRT}" "${KEY}" "${PEM}" "${PFX}")
-
-  for i in "${cert[@]}"; do
-    install -m '0644' -Dt "${DATA}/$( echo "${i}" | awk -F '/' '{ print $(NF-2) }' )" "${i}"
-  done
+  for i in "${cert[@]}"; do install -m '0644' -Dt "${DATA}" "${i}"; done
 }
 
 function svc_reload() {

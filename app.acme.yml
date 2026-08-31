@@ -1,0 +1,40 @@
+storage: '/root/apps/acme/.lego/'
+certificates:
+  ecc:
+    challenge: 'http01'
+    account: 'test'
+    keyType: 'EC256'
+    domains:
+      - 'example.com'
+      - 'mail.example.com'
+    renew:
+      days: 30
+    pfx:
+      password: 'pa$$word'
+      format: 'RC2'
+  rsa:
+    challenge: 'http01'
+    account: 'test'
+    keyType: 'RSA2048'
+    domains:
+      - 'example.com'
+      - 'mail.example.com'
+    renew:
+      days: 30
+    pfx:
+      password: 'pa$$word'
+      format: 'RC2'
+challenges:
+  http01:
+    http:
+      address: ':8080'
+accounts:
+  main:
+    server: 'https://acme-v02.api.letsencrypt.org/directory'
+    acceptsTermsOfService: true
+  test:
+    server: 'https://acme-staging-v02.api.letsencrypt.org/directory'
+    acceptsTermsOfService: true
+hooks:
+  deploy:
+    command: '/root/apps/acme/app.hook.deploy.sh'

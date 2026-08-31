@@ -2,5 +2,4 @@ SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 HOME=/root
 
-# 35 3 * * * root "${HOME}/apps/acme/app.acme.sh" 'example.org' 'rsa2048' 'renew' >> '/var/log/app.acme.log' 2>&1
-# 35 4 * * * root "${HOME}/apps/acme/app.acme.sh" 'example.org' 'ec256' 'renew' >> '/var/log/app.acme.log' 2>&1
+# 35 3 * * * root "${HOME}/apps/acme/lego" --config "${HOME}/apps/acme/app.acme.yml" >> '/var/log/app.acme.log' 2>&1
